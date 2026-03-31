@@ -3,9 +3,7 @@
 > 一套針對專業音頻設備與麥克風的「論文級產品研究報告」自動化產生系統。
 > An automated system for generating academic-grade product research reports on professional audio equipment and microphones.
 
-基於 **Perplexity Pro (Deep Research + Computer)** 運作，含多語系搜尋策略、證據分級、三層審計機制與成本控制規範。
-
-Powered by **Perplexity Pro (Deep Research + Computer)**, featuring multilingual search strategies, evidence grading, a three-tier audit mechanism, and cost control standards.
+基於 **Perplexity Pro (Deep Research + Computer)** 運作，整合了多語系搜尋策略、證據分級（L1-L4）、三層自動化審計與 Agentic Workflow 技能架構。
 
 ---
 
@@ -13,118 +11,75 @@ Powered by **Perplexity Pro (Deep Research + Computer)**, featuring multilingual
 
 - [系統概覽 / Overview](#系統概覽--overview)
 - [Repo 結構 / Repository Structure](#repo-結構--repository-structure)
+- [Agent 技能架構 / Agent Skills](#agent-技能架構--agent-skills)
 - [使用流程 / Workflow](#使用流程--workflow)
-- [版本管理原則 / Versioning](#版本管理原則--versioning)
 - [待補充檔案 / TODO](#待補充檔案--todo)
 
 ---
 
 ## 系統概覽 / Overview
 
-本系統將一份音頻設備研究報告的產出流程拆解為 **7 個執行階段**（請參考 `spec/workflow-v1.1.md`），每個階段對應一份 prompt 檔案，確保輸出品質可追蹤、可重現。
-This system decomposes the production of an audio equipment research report into **7 execution phases** (see `spec/workflow-v1.1.md`), each corresponding to a dedicated prompt file, ensuring traceable and reproducible output quality.
+本系統將研究報告的產出流程拆解為 **7 個執行階段**（對齊 `spec/workflow-v1.1.md`），並透過兩大核心代理人（Research & Writing Agent）與多項專屬技能（Skills）協作完成。
+
 ---
 
 ## Repo 結構 / Repository Structure
 
-```
+```text
 pro-article-generator/
-├── README.md                          # 本文件 / This file
-├── spec/                              # 系統規格文件 / System specification docs
-│   ├── report-template.md             # 報告章節架構模板 / Report chapter structure template
-│   ├── source-strategy.md             # 搜尋與來源策略 / Search & source strategy
-│   ├── evidence-levels.md             # 證據分級定義 / Evidence level definitions
-|   ├── workflow-v1.1.md          # 7個執行階段規範 / 7 execution phases spec
-│   └── audit-strategy.md              # 審計機制規範 / Audit mechanism spec  [TODO]
-├── prompts/                           # 各階段提示詞 / Phase prompts
-│   ├── space-instructions.md          # Perplexity Space 設定指令 / Space setup instructions
-│   ├── phase1-search.md               # Phase 1: 多語系搜尋 / Multilingual search  [TODO]
-│   ├── phase1-5-audit-url.md          # Phase 1.5: URL 審計 / URL audit  [TODO]
-│   ├── phase2-plan.md                 # Phase 2: 報告規劃 / Report planning  [TODO]
-│   ├── phase2-5-audit-claims.md       # Phase 2.5: 引用比對 / Claims audit  [TODO]
-│   ├── phase3-generate.md             # Phase 3: 逐章生成 / Chapter generation  [TODO]
-│   └── phase3-5-audit-final.md        # Phase 3.5: 數字一致性掃描 / Final audit  [TODO]
-├── sources/                           # 可信來源清單 / Trusted source lists
-│   ├── trusted-media.md               # 各語系可信媒體清單 / Trusted media by language  [TODO]
-│   └── trusted-forums.md              # 各語系可信論壇清單 / Trusted forums by language  [TODO]
-├── cost/                              # 成本控制 / Cost control
-│   └── cost-control.md                # 成本估算與控制策略 / Cost estimation & strategy  [TODO]
-└── outputs/                           # 報告輸出目錄 / Report output directory
-    └── [product-name]/                # 每份報告一個資料夾 / One folder per report
-        ├── sources.md
-        ├── audit-urls.md
-        ├── audit-claims.md
-        ├── plan.md
-        ├── report.md
-        └── audit-final.md
+├── spec/                # 系統規格文件 (Specs)
+│   ├── workflow-v1.1.md    # 7個執行階段規範 (核心)
+│   ├── report-template.md  # 報告 8 章節架構模板
+│   ├── source-strategy.md  # 4 輪搜尋策略
+│   ├── evidence-levels.md  # 證據分級 (L1-L4) 定義
+│   └── audit-strategy.md   # 三層審計執行規範
+├── agents/              # 代理人規格 (Agent Specs)
+│   ├── research-agent.md   # 負責 Phase 0-1.5 (搜尋與核網)
+│   ├── writing-agent.md    # 負責 Phase 2-3.5 (規劃與生成)
+│   └── skills/             # 自動化技能 (Skills)
+│       ├── url-auditor.md     # 網址有效性稽核
+│       ├── evidence-grader.md # 證據等級自動分級
+│       ├── outline-builder.md # 章節大綱自動對齊
+│       └── claims-auditor.md  # 引用與主張比對
+├── prompts/             # 實作提示詞 (Prompts) [TODO]
+├── sources/             # 可信來源資料庫 [TODO]
+└── outputs/             # 報告輸出歸檔
 ```
 
-> 標記 `[TODO]` 的檔案尚未建立，詳見[待補充檔案](#待補充檔案--todo)。
-> Files marked `[TODO]` are not yet created. See [TODO section](#待補充檔案--todo).
+---
+
+## Agent 技能架構 / Agent Skills
+
+本系統採模組化設計，兩大代理人分工如下：
+
+1.  **Research Agent**: 負責初始化（Phase 0）、多語系搜尋（Phase 1）與 URL 稽核（Phase 1.5）。
+2.  **Writing Agent**: 負責大綱規劃（Phase 2）、引用稽核（Phase 2.5）、章節生成（Phase 3）與最終掃描（Phase 3.5）。
 
 ---
 
 ## 使用流程 / Workflow
 
-每次產生新報告，依序執行以下步驟：
-Follow these steps in order to generate a new report:
-
-| 步驟 / Step | 動作 / Action | 輸出 / Output |
-|---|---|---|
-| 1 | 在 Perplexity Space 設定 `space-instructions.md` | Space 就緒 |
-| 2 | Deep Research → 貼入 `phase1-search.md`（替換設備名） | `sources.md` |
-| 3 | 執行 `phase1-5-audit-url.md` | `audit-urls.md` |
-| 4 | 貼入 `phase2-plan.md` | `plan.md` |
-| 5 | 執行 `phase2-5-audit-claims.md` | `audit-claims.md` |
-| 6 | 貼入 `phase3-generate.md`（逐章） | `report.md` |
-| 7 | 執行 `phase3-5-audit-final.md` | `audit-final.md` |
-| 8 | 將所有輸出存入 `outputs/[product-name]/` | 報告歸檔 |
-
----
-
-## 版本管理原則 / Versioning
-
-- **模板與提示詞更新**：在 `spec/` 與 `prompts/` 裡直接編輯，Git commit 留下紀錄。
-  **Template & prompt updates**: Edit directly in `spec/` and `prompts/`; Git commit serves as the changelog.
-
-- **已完成的報告**：`outputs/` 裡的內容不回頭修改；若需更新則建新版本資料夾（例：`neumann-u87ai-v2/`）。
-  **Completed reports**: Never modify content inside `outputs/`; create a new versioned folder for updates (e.g., `neumann-u87ai-v2/`).
-
-- **審計策略調整**：每次修改 `spec/audit-strategy.md` 時，必須在檔案內說明修改原因與日期。
-  **Audit strategy changes**: Every modification to `spec/audit-strategy.md` must include the reason and date inside the file.
+| 階段 | 動作 | 核心輸出 | 負責 Agent/Skill |
+|------|------|----------|-----------------|
+| **P0-P1** | 初始化與多語系搜尋 | `sources.md` | Research Agent |
+| **P1.5** | **URL 審計** | `audit-urls.md` | `url-auditor` |
+| **P2** | 大綱規劃與來源映射 | `plan.md` | `outline-builder` |
+| **P2.5** | **引用比對審計** | `audit-claims.md` | `claims-auditor` |
+| **P3** | 專業內容逐章生成 | `report.md` | Writing Agent |
+| **P3.5** | **最終一致性審計** | `audit-final.md` | Writing Agent |
 
 ---
 
 ## 待補充檔案 / TODO
 
-以下檔案已規劃但尚未建立，歡迎按優先序補充：
-The following files are planned but not yet created:
-
-### 高優先 / High Priority
-- [ ] `spec/audit-strategy.md` — 三層審計的詳細執行規則
-- [ ] `prompts/phase1-search.md` — 多語系搜尋階段提示詞
-- [ ] `prompts/phase2-plan.md` — 報告規劃階段提示詞
-- [ ] `prompts/phase3-generate.md` — 逐章生成階段提示詞
-
-### 中優先 / Medium Priority
-- [ ] `prompts/phase1-5-audit-url.md` — URL 審計提示詞
-- [ ] `prompts/phase2-5-audit-claims.md` — 引用比對提示詞
-- [ ] `prompts/phase3-5-audit-final.md` — 數字一致性掃描提示詞
-- [ ] `cost/cost-control.md` — Token 成本估算與控制策略
-
-### 低優先 / Low Priority
-- [ ] `sources/trusted-media.md` — 各語系可信媒體清單
-- [ ] `sources/trusted-forums.md` — 各語系可信論壇清單
+- [ ] `prompts/` 內的詳細提示詞實作
+- [ ] `sources/trusted-media.md` 各語系媒體清單
+- [ ] `cost/cost-control.md` Token 成本管理策略
 
 ---
 
-## 規格文件快速索引 / Spec Quick Reference
+## 快速索引 / Quick Reference
 
-| 檔案 / File | 說明 / Description |
-|---|---|
-| `spec/report-template.md` | 報告 8 章節固定架構 / Fixed 8-chapter report structure |
-| `spec/source-strategy.md` | 4 輪搜尋流程與語言涵蓋要求 / 4-round search process & language coverage |
-| `spec/evidence-levels.md` | Level 1–4 證據分級定義與引用規則 / Evidence levels 1–4 definitions & citation rules |
-| `spec/workflow-v1.1.md` | 7 個執行階段詳細規範（時間、訊號、失敗處理） / 7 execution phases detailed spec (time, signals, failure handling) |
-| `spec/audit-strategy.md` | 三層審計執行規範（待建） / Three-tier audit execution spec (TODO) |
-| `prompts/space-instructions.md` | Perplexity Space 設定與 Agentic workflow 說明 / Space setup & agentic workflow |
+- **最新流程規範**: [spec/workflow-v1.1.md](spec/workflow-v1.1.md)
+- **證據分級標準**: [spec/evidence-levels.md](spec/evidence-levels.md)
+- **Agent 架構說明**: [agents/README.md](agents/README.md)
