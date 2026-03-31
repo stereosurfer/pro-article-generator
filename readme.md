@@ -29,17 +29,17 @@
 pro-article-generator/
 ├── spec/                # 系統規格文件 (Specs)
 │   ├── workflow-v1.1.md    # 7個執行階段規範 (核心)
-│   ├── report-template.md  # 報告 8 章節架構模板
+│   ├── report-template.md  # 報告 9 章節架構模板 (Chapter 0-8)
 │   ├── source-strategy.md  # 4 輪搜尋策略
 │   ├── evidence-levels.md  # 證據分級 (L1-L4) 定義
-│   └── audit-strategy.md   # 三層審計執行規範
+│   └── audit-strategy.md   # 三層審計執行規範 (v1.1)
 ├── agents/              # 代理人規格 (Agent Specs)
 │   ├── research-agent.md   # 負責 Phase 0-1.5 (搜尋與核網)
 │   ├── writing-agent.md    # 負責 Phase 2-3.5 (規劃與生成)
 │   └── skills/             # 自動化技能 (Skills)
 │       ├── url-auditor.md     # 網址有效性稽核
 │       ├── evidence-grader.md # 證據等級自動分級
-│       ├── outline-builder.md # 章節大綱自動對齊
+│       ├── outline-builder.md # 章節大綱自動對齊 (9 章)
 │       └── claims-auditor.md  # 引用與主張比對
 ├── prompts/             # 實作提示詞 (Prompts) [TODO]
 ├── sources/             # 可信來源資料庫 [TODO]
@@ -53,7 +53,7 @@ pro-article-generator/
 本系統採模組化設計，兩大代理人分工如下：
 
 1.  **Research Agent**: 負責初始化（Phase 0）、多語系搜尋（Phase 1）與 URL 稽核（Phase 1.5）。
-2.  **Writing Agent**: 負責大綱規劃（Phase 2）、引用稽核（Phase 2.5）、章節生成（Phase 3）與最終掃描（Phase 3.5）。
+2.  **Writing Agent**: 負責大綱規劃（Phase 2, 9 章節）、引用稽核（Phase 2.5）、章節生成（Phase 3）與最終掃描（Phase 3.5）。
 
 ---
 
