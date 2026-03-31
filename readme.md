@@ -21,10 +21,8 @@ Powered by **Perplexity Pro (Deep Research + Computer)**, featuring multilingual
 
 ## 系統概覽 / Overview
 
-本系統將一份音頻設備研究報告的產出流程拆解為 **6 個階段 + 3 層審計**，每個階段對應一份 prompt 檔案，確保輸出品質可追蹤、可重現。
-
-This system decomposes the production of an audio equipment research report into **6 phases + 3 audit layers**, each corresponding to a dedicated prompt file, ensuring traceable and reproducible output quality.
-
+本系統將一份音頻設備研究報告的產出流程拆解為 **7 個執行階段**（請參考 `spec/workflow-v1.1.md`），每個階段對應一份 prompt 檔案，確保輸出品質可追蹤、可重現。
+This system decomposes the production of an audio equipment research report into **7 execution phases** (see `spec/workflow-v1.1.md`), each corresponding to a dedicated prompt file, ensuring traceable and reproducible output quality.
 ---
 
 ## Repo 結構 / Repository Structure
@@ -36,6 +34,7 @@ pro-article-generator/
 │   ├── report-template.md             # 報告章節架構模板 / Report chapter structure template
 │   ├── source-strategy.md             # 搜尋與來源策略 / Search & source strategy
 │   ├── evidence-levels.md             # 證據分級定義 / Evidence level definitions
+|   ├── workflow-v1.1.md          # 7個執行階段規範 / 7 execution phases spec
 │   └── audit-strategy.md              # 審計機制規範 / Audit mechanism spec  [TODO]
 ├── prompts/                           # 各階段提示詞 / Phase prompts
 │   ├── space-instructions.md          # Perplexity Space 設定指令 / Space setup instructions
@@ -126,5 +125,6 @@ The following files are planned but not yet created:
 | `spec/report-template.md` | 報告 8 章節固定架構 / Fixed 8-chapter report structure |
 | `spec/source-strategy.md` | 4 輪搜尋流程與語言涵蓋要求 / 4-round search process & language coverage |
 | `spec/evidence-levels.md` | Level 1–4 證據分級定義與引用規則 / Evidence levels 1–4 definitions & citation rules |
+| `spec/workflow-v1.1.md` | 7 個執行階段詳細規範（時間、訊號、失敗處理） / 7 execution phases detailed spec (time, signals, failure handling) |
 | `spec/audit-strategy.md` | 三層審計執行規範（待建） / Three-tier audit execution spec (TODO) |
 | `prompts/space-instructions.md` | Perplexity Space 設定與 Agentic workflow 說明 / Space setup & agentic workflow |
