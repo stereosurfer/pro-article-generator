@@ -20,49 +20,42 @@
 
 ## 概述 / Overview
 
-本系統將音頻設備研究報告生成流程拆解為 **3 個核心 Agent** 和 **4 個可重用 Skill**，符合以下設計原則：
+本系統將音頻設備研究報告生成流程拆解為 **2 個核心 Agent** 和 **4 個專屬 Skill**，對齊 `spec/workflow-v1.1.md` 的 7 個執行階段。
 
 ### 設計原則 / Design Principles
 
-1. **模組化 / Modularity**  
-   每個 Agent 專注單一職責，可獨立運作
-
-2. **可組合性 / Composability**  
-   Skills 可被多個 Agents 調用，避免重複
-
-3. **平台無關 / Platform Agnostic**  
-   遵循標準 prompt 格式，可在任何 LLM 平台使用
-
-4. **可追蹤性 / Traceability**  
-   每個階段輸出明確定義，便於審計
+1. **模組化 / Modularity**: 每個 Agent 專注特定階段，可獨立運作。
+2. **可組合性 / Composability**: Skills 可被多個 Agents 調用。
+3. **平台無關 / Platform Agnostic**: 遵循標準 Prompt 格式。
+4. **可追蹤性 / Traceability**: 每個階段輸出明確定義，便於審計。
 
 ---
 
 ## 架構設計 / Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
-│                  Orchestration Layer                │
+│                 Orchestration Layer                 │
 │          (User / Python Script / Workflow)          │
 └──────────────────┬──────────────────────────────────┘
                    │
-        ┌──────────┼──────────┐
-        │          │          │
-┌───────▼────┐ ┌──▼──────┐ ┌─▼────────┐
-│ Research   │ │Planning │ │ Writing  │
-│   Agent    │ │ Agent   │ │  Agent   │
-└─────┬──────┘ └───┬─────┘ └────┬─────┘
-      │            │             │
-      └────────┬───┴─────┬───────┘
-               │         │
-        ┌──────▼─────────▼──────┐
-        │   Shared Skills Pool  │
-        ├───────────────────────┤
-        │ • Evidence Grader     │
-        │ • Cross-Ref Checker   │
-        │ • Number Auditor      │
-        │ • Multilingual Search │
-        └───────────────────────┘
+         ┌─────────┴─────────┐
+         │                   │
+   ┌─────▼──────┐      ┌─────▼──────┐
+   │  Research  │      │  Writing   │
+   │   Agent    │      │   Agent    │
+   └─────┬──────┘      └─────┬──────┘
+         │                   │
+         └─────────┬─────────┘
+                   │
+   ┌───────────────▼───────────────┐
+   │       Shared Skills Pool      │
+   ├───────────────────────────────┤
+   │ • url-auditor.md              │
+   │ • evidence-grader.md          │
+   │ • outline-builder.md          │
+   │ • claims-auditor.md           │
+   └───────────────────────────────┘
 ```
 
 ---
@@ -70,201 +63,56 @@
 ## 核心 Agents
 
 ### 1. Research Agent（研究專員）
-
 **檔案**: `research-agent.md`
+**職責**: 執行 Phase 0-1.5，包含初始化、多語系搜尋與 URL 稽核。
+**調用 Skills**: `url-auditor.md`, `evidence-grader.md`
 
-**職責**:  
-- 執行多語系深度搜尋（EN/ZH-TW/ZH-CN/JA）
-- URL 有效性驗證與分級
-- 生成結構化來源清單
-
-**對應階段**: Phase 1 + Phase 1.5  
-**輸入**: 產品名稱、搜尋參數  
-**輸出**: `sources.md`, `audit-urls.md`
-
-**調用 Skills**:  
-- Multilingual Search Skill
-- Evidence Grader Skill
-
----
-
-### 2. Planning Agent（規劃專員）
-
-**檔案**: `planning-agent.md`
-
-**職責**:  
-- 分析來源內容，規劃報告結構
-- 分配證據到各章節
-- 執行聲明交叉驗證
-
-**對應階段**: Phase 2 + Phase 2.5  
-**輸入**: `sources.md`, `report-template.md`  
-**輸出**: `plan.md`, `audit-claims.md`
-
-**調用 Skills**:  
-- Evidence Grader Skill
-- Cross-Reference Checker Skill
-
----
-
-### 3. Writing Agent（寫作專員）
-
+### 2. Writing Agent（寫作專員）
 **檔案**: `writing-agent.md`
-
-**職責**:  
-- 按照計畫逐章生成報告
-- 確保學術風格與一致性
-- 執行最終數字審計
-
-**對應階段**: Phase 3 + Phase 3.5  
-**輸入**: `plan.md`, `sources.md`  
-**輸出**: `report.md`, `audit-final.md`
-
-**調用 Skills**:  
-- Number Consistency Auditor Skill
-- Cross-Reference Checker Skill
+**職責**: 負責 Phase 2-3.5，包含大綱規劃、引用稽核、內容生成與最終一致性掃描。
+**調用 Skills**: `outline-builder.md`, `claims-auditor.md`
 
 ---
 
 ## 支援 Skills
 
-### 1. Evidence Grader Skill
+### 1. URL Auditor
+**檔案**: `skills/url-auditor.md`
+**功能**: 稽核網址有效性與存活狀態 (Phase 1.5)。
 
+### 2. Evidence Grader
 **檔案**: `skills/evidence-grader.md`
+**功能**: 判定證據等級 (L1-L4) 並過濾低品質內容。
 
-判斷來源的證據等級（Level 1-4），基於：
-- 來源類型（官網 > 評測 > 論壇）
-- 內容完整度
-- 可驗證性
+### 3. Outline Builder
+**檔案**: `skills/outline-builder.md`
+**功能**: 自動對齊 9 章節架構並進行來源映射 (Phase 2)。
 
----
-
-### 2. Cross-Reference Checker Skill
-
-**檔案**: `skills/cross-reference-checker.md`
-
-比對多個來源的聲明一致性：
-- 識別矛盾
-- 計算共識度
-- 標註需要進一步驗證的項目
-
----
-
-### 3. Number Consistency Auditor Skill
-
-**檔案**: `skills/number-auditor.md`
-
-掃描全文規格數字：
-- 檢查單位一致性
-- 識別不一致的數值
-- 生成審計報告
-
----
-
-### 4. Multilingual Search Skill
-
-**檔案**: `skills/multilingual-search.md`
-
-執行語言特定搜尋策略：
-- 構建語言專屬查詢
-- 針對性平台選擇
-- 結果結構化輸出
+### 4. Claims Auditor
+**檔案**: `skills/claims-auditor.md`
+**功能**: 交叉驗證事實主張與原始來源的吻合度 (Phase 2.5)。
 
 ---
 
 ## 使用方式 / Usage
 
-### 快速開始 / Quick Start
-
-1. **選擇執行模式**：
-   - 手動模式：逐步複製貼上 Agent prompts
-   - 自動模式：使用 Python orchestrator（見 `examples/`）
-
-2. **準備輸入**：
-   ```
-   產品名稱: "Neumann U87 Ai"
-   目標語言: ["en", "zh-tw", "zh-cn", "ja"]
-   ```
-
-3. **執行流程**：
-   ```
-   Research Agent → sources.md + audit-urls.md
-         ↓
-   Planning Agent → plan.md + audit-claims.md
-         ↓
-   Writing Agent → report.md + audit-final.md
-   ```
-
-### 詳細範例 / Detailed Examples
-
-參見 `examples/` 資料夾：
-- `manual-workflow.md` - 手動執行完整流程
-- `api-orchestration.py` - Python API 自動化腳本
-- `claude-projects.md` - 在 Claude Projects 中設置
-
----
-
-## 跨平台部署 / Cross-Platform Deployment
-
-### 支援平台 / Supported Platforms
-
-| 平台 | 使用方式 | 備註 |
-|------|---------|------|
-| Claude (Anthropic) | 直接貼上 Agent prompts | 原生支援 Agent 模式 |
-| ChatGPT (OpenAI) | 使用 Custom GPTs | 需手動設置 instructions |
-| Gemini (Google) | 貼上 prompts | 完整功能支援 |
-| Perplexity Pro | 使用 Deep Research + Computer | 搜尋能力最強 |
-| Local LLMs | 透過 API 調用 | 需自行實作 orchestration |
-
-### 平台特定配置 / Platform-Specific Config
-
-詳見 `examples/platform-configs/` 資料夾
+1. **執行 Research**: 獲取產品關鍵字，產出 `sources.md`。
+2. **審核 URL**: 透過 `url-auditor` 確認來源可靠。
+3. **規劃計畫**: 使用 `outline-builder` 產出 `plan.md`。
+4. **生成內容**: 由 Writing Agent 逐章產出報告，並由 `claims-auditor` 核實。
 
 ---
 
 ## 檔案結構 / File Structure
 
-```
+```text
 agents/
-├── README.md                    # 本文件 / This file
-├── research-agent.md            # 研究專員 Agent
-├── planning-agent.md            # 規劃專員 Agent
-├── writing-agent.md             # 寫作專員 Agent
-├── skills/                      # 可重用技能
-│   ├── evidence-grader.md
-│   ├── cross-reference-checker.md
-│   ├── number-auditor.md
-│   └── multilingual-search.md
-└── examples/                    # 使用範例
-    ├── manual-workflow.md
-    ├── api-orchestration.py
-    ├── claude-projects.md
-    └── platform-configs/
-        ├── claude.md
-        ├── chatgpt.md
-        ├── gemini.md
-        └── perplexity.md
+├── README.md           # 本文件
+├── research-agent.md   # Phase 0-1.5
+├── writing-agent.md    # Phase 2-3.5
+└── skills/             # 自動化技能
+    ├── url-auditor.md
+    ├── evidence-grader.md
+    ├── outline-builder.md
+    └── claims-auditor.md
 ```
-
----
-
-## 版本管理 / Versioning
-
-- Agent prompts 更新時，在檔案內註記版本號與更新日期
-- 保持向後相容性，重大變更時建立新版本檔案
-- 參考主 repo 的版本管理原則
-
----
-
-## 貢獻指南 / Contributing
-
-歡迎提出改進建議：
-1. 新增 Skills 時，請遵循現有格式
-2. Agent 更新需同步更新本 README
-3. 提供使用範例到 `examples/` 資料夾
-
----
-
-## 授權 / License
-
-與主 repository 相同授權條款
