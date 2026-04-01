@@ -16,7 +16,7 @@ nav_order: 1
 
 | Product / 產品 | Category / 品類 | Grade / 評級 | Sources / 來源 | Date / 日期 | Report / 報告 |
 |---|---|---|---|---|---|
-| Neumann U87 (Original & Ai) | audio-equipment | B | 45 (9 L1) | 2026-04-01 | [Read Report](../outputs/neumann-u87/report.md) |
+| Neumann U87 (Original & Ai) | audio-equipment | B | 45 (9 L1) | 2026-04-01 | [Read Report](outputs/neumann-u87/) |
 
 ---
 
