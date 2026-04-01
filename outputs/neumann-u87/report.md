@@ -2,6 +2,7 @@
 layout: default
 title: Neumann U87 (Original & Ai)
 nav_order: 10
+permalink: /outputs/neumann-u87/
 ---
 
 # Neumann U87: Research Report
