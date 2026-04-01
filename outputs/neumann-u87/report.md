@@ -1,3 +1,9 @@
+---
+layout: default
+title: Neumann U87 (Original & Ai)
+nav_order: 10
+---
+
 # Neumann U87: Research Report
 # Neumann U87：研究報告
 
