@@ -1,0 +1,24 @@
+product_name: "Neumann U87 (Original & Ai)"
+product_slug: "neumann-u87"
+category: "audio-equipment"
+generated_at: "2026-04-01T02:18:00+08:00"
+system_version: "v2.0.0"
+skill_commit: "latest"
+evidence_summary:
+  total_sources: 45
+  l1_sources: 9
+  l2_sources: 16
+  l3_sources: 19
+  l4_sources: 1
+  valid_sources: 45
+quality_grade: "B"
+verification_rate: "100%"
+report_language: "en+zh"
+word_count: 5500
+chapters_complete: 9/9
+blind_spots:
+  - "Psychoacoustic Subjectivity (reliance on community consensus for 'vibe' and 'color')"
+  - "Proprietary Manufacturing Tolerances (capsule tensioning remains a trade secret)"
+  - "Regional Semantic Nuances in Audio Evaluation terminology"
+number_conflicts: 0
+needs_human_review: false
